@@ -14,6 +14,9 @@ type model struct {
 	level      [][]rune
 	playerX    int
 	playerY    int
+	catTargetX int
+	catTargetY int
+	catEarned  bool
 	catX       int
 	catY       int
 	width      int
@@ -74,6 +77,7 @@ func initialModel() model {
 		playerY:    1,
 		catX:       1,
 		catY:       1,
+		catEarned:  false,
 	}
 }
 
@@ -84,6 +88,8 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
+		m.catX, m.catY = m.catTargetX, m.catTargetY
+		m.catTargetX, m.catTargetY = m.playerX, m.playerY
 		switch msg.String() {
 		case "ctrl+c", "q", "esc":
 			return m, tea.Quit
@@ -113,6 +119,11 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.level = m.levels[0]
 				m.playerX = 1
 				m.playerY = 1
+				m.catEarned = true
+				m.catX = 1
+				m.catY = 1
+				m.catTargetX = 1
+				m.catTargetY = 1
 			}
 		}
 
@@ -120,6 +131,9 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			m.levelIndex++
 			if m.levelIndex != len(m.levels) {
 				m.level = m.levels[m.levelIndex]
+				m.catTargetX, m.catTargetY = m.playerX, m.playerY
+				m.catX, m.catY = m.playerX, m.playerY 
+				
 			}
 		}
 
@@ -141,7 +155,15 @@ func (m model) View() string {
 			Foreground(lipgloss.Color("#FFD700")).
 			Align(lipgloss.Center)
 
-		return victoryStyle.Render("\n🎉 VICTORY! 🎉\n\nYou completed all levels!\n\nPress q to quit\n Press r to restart")
+		endMessage := "\n🎉 VICTORY! 🎉\n\nYou completed all levels! "
+		if !m.catEarned {
+			endMessage += "However...\n\n\n^._.^\n\n  A mysterious cat watched your journey...\n"
+			endMessage += "Play again to have them join you!\n\n"	
+		} else {
+			endMessage += "\n\n\nฅ^•ﻌ•^ฅ\n\n You and your faithful companion made it to safety!\n\n"
+		}
+		endMessage += "Press 'q' to quit | Press 'r' to restart"
+		return victoryStyle.Render(endMessage)
 	}
 
 	// Define styles
@@ -170,6 +192,8 @@ func (m model) View() string {
 		for x, cell := range row {
 			if x == m.playerX && y == m.playerY {
 				sb.WriteString(playerStyle.Render("@"))
+			} else if m.catEarned && x == m.catX && y == m.catY {
+				sb.WriteString(playerStyle.Render("o"))
 			} else if cell == '#' {
 				sb.WriteString(wallStyle.Render(string(cell)))
 			} else if cell == 'X' {
