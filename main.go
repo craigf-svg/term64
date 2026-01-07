@@ -33,7 +33,7 @@ func initialModel() model {
 		[]rune("#...#..#####.......#"),
 		[]rune("#..................#"),
 		[]rune("#.......######.....#"),
-		[]rune("#.......#....#...X.#"),
+		[]rune("#.......#....#...%.#"),
 		[]rune("#.......#....#.....#"),
 		[]rune("#..................#"),
 		[]rune("####################"),
@@ -41,13 +41,13 @@ func initialModel() model {
 
 	level2 := [][]rune{
 		[]rune("####################"),
-		[]rune("#....X.............#"),
+		[]rune("#....%.............#"),
 		[]rune("#...###............#"),
 		[]rune("#..................#"),
 		[]rune("#.####.########....#"),
 		[]rune("#..................#"),
 		[]rune("#.......#....#####.#"),
-		[]rune("#.......#...#....-##"),
+		[]rune("#.......#...#.....##"),
 		[]rune("#.......#....#.###.#"),
 		[]rune("#.......#..........#"),
 		[]rune("####################"),
@@ -62,7 +62,7 @@ func initialModel() model {
 		[]rune("#.###.....###......#"),
 		[]rune("#..................#"),
 		[]rune("#.......#####......#"),
-		[]rune("#.......#...#....X.#"),
+		[]rune("#.......#...#....%.#"),
 		[]rune("#.......#####......#"),
 		[]rune("####################"),
 	}
@@ -133,7 +133,6 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.level = m.levels[m.levelIndex]
 				m.catTargetX, m.catTargetY = m.playerX, m.playerY
 				m.catX, m.catY = m.playerX, m.playerY 
-				
 			}
 		}
 
@@ -146,7 +145,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 }
 
 func (m model) levelChange(x, y int) bool {
-	return m.level[y][x] == 'X'
+	return m.level[y][x] == '%'
 }
 
 func (m model) View() string {
@@ -177,8 +176,12 @@ func (m model) View() string {
 		Foreground(lipgloss.Color("#FFD700")).
 		Bold(true)
 
-	enemyStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#FF0000")).
+	catStyle := lipgloss.NewStyle().
+    Foreground(lipgloss.Color("#FFA500")).
+    Bold(true)
+
+	stairsStyle := lipgloss.NewStyle().
+    Foreground(lipgloss.Color("#87CEEB")).
 		Bold(true)
 
 	helpStyle := lipgloss.NewStyle().
@@ -193,11 +196,11 @@ func (m model) View() string {
 			if x == m.playerX && y == m.playerY {
 				sb.WriteString(playerStyle.Render("@"))
 			} else if m.catEarned && x == m.catX && y == m.catY {
-				sb.WriteString(playerStyle.Render("o"))
+				sb.WriteString(catStyle.Render("o"))
 			} else if cell == '#' {
 				sb.WriteString(wallStyle.Render(string(cell)))
-			} else if cell == 'X' {
-				sb.WriteString(enemyStyle.Render(string(cell)))
+			} else if cell == '%' {
+				sb.WriteString(stairsStyle.Render(string(cell)))
 			} else {
 				sb.WriteString(floorStyle.Render(string(cell)))
 			}
@@ -216,7 +219,7 @@ func (m model) isWalkable(x, y int) bool {
 		return false
 	}
 
-	if m.level[y][x] == 'X' {
+	if m.level[y][x] == '%' {
 		return true
 	}
 
