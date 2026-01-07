@@ -132,7 +132,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			if m.levelIndex != len(m.levels) {
 				m.level = m.levels[m.levelIndex]
 				m.catTargetX, m.catTargetY = m.playerX, m.playerY
-				m.catX, m.catY = m.playerX, m.playerY 
+				m.catX, m.catY = m.playerX, m.playerY
 			}
 		}
 
@@ -154,16 +154,20 @@ func (m model) View() string {
 			Foreground(lipgloss.Color("#FFD700")).
 			Align(lipgloss.Center)
 
+		catFaceStyle := lipgloss.NewStyle().
+			Foreground(lipgloss.Color("#FFA500")).
+			Align(lipgloss.Center)
+
 		endMessage := "\n🎉 VICTORY! 🎉\n\nYou completed all levels! "
 		if !m.catEarned {
-			endMessage += "However...\n\n\n^._.^\n\n  A mysterious cat watched your journey...\n"
-			endMessage += "Play again to have them join you!\n\n"	
+				endMessage += "However...\n\n\n" + catFaceStyle.Render("^._.^") + "\n\n  A mysterious cat watched your journey...\n"
+				endMessage += "Play again to have them join you!\n\n"	
 		} else {
-			endMessage += "\n\n\nฅ^•ﻌ•^ฅ\n\n You and your faithful companion made it to safety!\n\n"
+				endMessage += "\n\n\n" + catFaceStyle.Render("ฅ^•ﻌ•^ฅ") + "\n\n You and your faithful companion made it to safety!\n\n"
 		}
 		endMessage += "Press 'q' to quit | Press 'r' to restart"
 		return victoryStyle.Render(endMessage)
-	}
+}
 
 	// Define styles
 	wallStyle := lipgloss.NewStyle().
@@ -177,11 +181,11 @@ func (m model) View() string {
 		Bold(true)
 
 	catStyle := lipgloss.NewStyle().
-    Foreground(lipgloss.Color("#FFA500")).
-    Bold(true)
+		Foreground(lipgloss.Color("#FFA500")).
+		Bold(true)
 
 	stairsStyle := lipgloss.NewStyle().
-    Foreground(lipgloss.Color("#87CEEB")).
+		Foreground(lipgloss.Color("#87CEEB")).
 		Bold(true)
 
 	helpStyle := lipgloss.NewStyle().
@@ -208,10 +212,16 @@ func (m model) View() string {
 		sb.WriteString("\n")
 	}
 
+	// Add instruction text
+	instruction := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#00CC00")).
+		Bold(true).
+		Render("Get to the stairs (%) in all levels to escape!")
+
 	// Add help text
 	help := helpStyle.Render("Arrow keys or hjkl to move • q/esc to quit")
 
-	return sb.String() + help
+	return sb.String() + help + "\n\n" + instruction
 }
 
 func (m model) isWalkable(x, y int) bool {
