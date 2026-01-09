@@ -28,7 +28,7 @@ func initialModel() model {
 	level1 := [][]rune{
 		[]rune("####################"),
 		[]rune("#..................#"),
-		[]rune("#...####...........#"),
+		[]rune("#.@.####...........#"),
 		[]rune("#...#..#...........#"),
 		[]rune("#...#..#####.......#"),
 		[]rune("#..................#"),
@@ -44,12 +44,12 @@ func initialModel() model {
 		[]rune("#....%.............#"),
 		[]rune("#...###............#"),
 		[]rune("#..................#"),
-		[]rune("#.####.########....#"),
+		[]rune("#.####.#######.....#"),
 		[]rune("#..................#"),
-		[]rune("#.......#....#####.#"),
-		[]rune("#.......#...#.....##"),
 		[]rune("#.......#....#.###.#"),
-		[]rune("#.......#..........#"),
+		[]rune("#.......#####.....##"),
+		[]rune("#.......#....#.###.#"),
+		[]rune("#.......#........-.#"),
 		[]rune("####################"),
 	}
 
@@ -57,10 +57,10 @@ func initialModel() model {
 		[]rune("####################"),
 		[]rune("#..................#"),
 		[]rune("#.###.....###......#"),
-		[]rune("#.#.......#.#......#"),
-		[]rune("#.#.......#.#......#"),
+		[]rune("#.#.#.....#.#......#"),
+		[]rune("#.#.#.....#.#......#"),
 		[]rune("#.###.....###......#"),
-		[]rune("#..................#"),
+		[]rune("#..-...............#"),
 		[]rune("#.......#####......#"),
 		[]rune("#.......#...#....%.#"),
 		[]rune("#.......#####......#"),
@@ -68,17 +68,29 @@ func initialModel() model {
 	}
 
 	allLevels := [][][]rune{level1, level2, level3}
+	playerY, playerX := findPlayerStart(allLevels[0])
 
 	return model{
 		levels:     allLevels,
 		levelIndex: 0,
 		level:      allLevels[0],
-		playerX:    1,
-		playerY:    1,
+		playerX:    playerX,
+		playerY:    playerY,
 		catX:       1,
 		catY:       1,
 		catEarned:  false,
 	}
+}
+
+func findPlayerStart(runeMap [][]rune) (row, col int) {
+	for i := 0; i < len(runeMap); i++ {
+			for j := 0; j < len(runeMap[i]); j++ {
+					if runeMap[i][j] == '-' {
+							return i, j
+					}
+			}
+	}
+	return 2, 2 
 }
 
 func (m model) Init() tea.Cmd {
@@ -127,10 +139,14 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-		if m.levelChange(m.playerX, m.playerY) {
+		if m.shouldChangeLevel(m.playerX, m.playerY) {
 			m.levelIndex++
+			// Ensure valid level before changing
 			if m.levelIndex != len(m.levels) {
 				m.level = m.levels[m.levelIndex]
+
+				// Need logic for finding player start location on generated maps
+				m.playerY, m.playerX = findPlayerStart(m.levels[m.levelIndex])
 				m.catTargetX, m.catTargetY = m.playerX, m.playerY
 				m.catX, m.catY = m.playerX, m.playerY
 			}
@@ -144,7 +160,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	return m, nil
 }
 
-func (m model) levelChange(x, y int) bool {
+func (m model) shouldChangeLevel(x, y int) bool {
 	return m.level[y][x] == '%'
 }
 
@@ -205,6 +221,9 @@ func (m model) View() string {
 				sb.WriteString(wallStyle.Render(string(cell)))
 			} else if cell == '%' {
 				sb.WriteString(stairsStyle.Render(string(cell)))
+			} else if cell == '@' {
+				// Start of level marker
+				sb.WriteString(floorStyle.Render("."))
 			} else {
 				sb.WriteString(floorStyle.Render(string(cell)))
 			}
