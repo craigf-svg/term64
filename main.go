@@ -165,21 +165,25 @@ func (m model) View() string {
 	// Define styles
 	wallStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#FFFFFF"))
-
 	floorStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#666666"))
+	stairsStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#87CEEB")).
+		Bold(true)
+	lockedStairsStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#4A5568")).
+		Bold(false)
 
 	playerStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#FFD700")).
 		Bold(true)
-
 	catStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#FFA500")).
 		Bold(true)
 
-	stairsStyle := lipgloss.NewStyle().
-		Foreground(lipgloss.Color("#87CEEB")).
-		Bold(true)
+	keyStyle := lipgloss.NewStyle().
+		Foreground(lipgloss.Color("#C0C0C0")).
+		Bold(false)
 
 	helpStyle := lipgloss.NewStyle().
 		Foreground(lipgloss.Color("#888888")).
@@ -197,12 +201,16 @@ func (m model) View() string {
 			} else if cell == '#' {
 				sb.WriteString(wallStyle.Render(string(cell)))
 			} else if cell == '%' {
-				sb.WriteString(stairsStyle.Render(string(cell)))
+				if !m.hasKey && m.levelHasKey[m.levelIndex] {
+					sb.WriteString(lockedStairsStyle.Render(string(cell)))
+				} else {
+					sb.WriteString(stairsStyle.Render(string(cell)))
+				}
 			} else if cell == '⚷' {
 				if m.hasKey {
 					sb.WriteString(floorStyle.Render("."))
 				} else {
-					sb.WriteString(floorStyle.Render("⚷"))
+					sb.WriteString(keyStyle.Render("⚷"))
 				}
 			} else if cell == '@' {
 				// Start of level marker
