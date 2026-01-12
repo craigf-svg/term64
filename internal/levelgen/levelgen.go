@@ -51,7 +51,7 @@ func GenerateLevel(width, height int) [][]rune {
 	level[startY][startX] = '.'
 	// Start position is static for now 
 	// For dynamic generate the start coords and place @ symbol
-	// level[startY][startX] = '@'
+	level[startY][startX] = '@'
 	level[endY][endX] = '%'
 
 	// Randomly choose to carve right or down from start
@@ -71,7 +71,7 @@ func GenerateLevel(width, height int) [][]rune {
 	x, y := startX, startY
 	for !(x == endX && y == endY) {  // Loop until we reach the goal
 		// Purely leave walkable - for debugging
-		if level[y][x] != '-' {
+		if level[y][x] != '△' && level[y][x] != '@' {
 			level[y][x] = '.'  // Place floor tile
 		}
 		
@@ -100,6 +100,20 @@ func GenerateLevel(width, height int) [][]rune {
 		}
 	}
 
+	keyY, keyX := placeKey(level)
+
+	level[keyY][keyX] = '△'
 	return level
+}
+
+func placeKey(level [][]rune) (int, int) { 
+	x := rand.Intn(6) + 4
+	y := rand.Intn(6) + 4
+	for level[y][x] != '.' {
+		x = rand.Intn(6) + 4
+		y = rand.Intn(6) + 4
+	}
+	
+	return y,x 
 }
 

@@ -23,6 +23,7 @@ type model struct {
 	width      int
 	height     int
 	win        bool
+	hasKey     bool
 }
 
 func initialModel() model {
@@ -43,6 +44,7 @@ func initialModel() model {
 		catX:       1,
 		catY:       1,
 		catEarned:  false,
+		hasKey:     false,
 	}
 }
 
@@ -101,18 +103,26 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				m.catY = 2
 				m.catTargetX = 2
 				m.catTargetY = 2
+				m.hasKey = false
 			}
 		}
 
+	if m.level[m.playerY][m.playerX] == '△' {
+		m.hasKey = true;
+	}
+
 	if m.shouldChangeLevel(m.playerX, m.playerY) {
-			m.levelIndex++
-			if m.levelIndex < len(m.levels) {
-					m.level = m.levels[m.levelIndex]
-					m.playerY, m.playerX = findPlayerStart(m.level)
-					m.catTargetX, m.catTargetY = m.playerX, m.playerY
-					m.catX, m.catY = m.playerX, m.playerY
+			if m.hasKey {
+				m.levelIndex++
+				if m.levelIndex < len(m.levels) {
+						m.level = m.levels[m.levelIndex]
+						m.playerY, m.playerX = findPlayerStart(m.level)
+						m.catTargetX, m.catTargetY = m.playerX, m.playerY
+						m.catX, m.catY = m.playerX, m.playerY
+						m.hasKey = false
+				}
+				// else: player completed all levels, display victory message
 			}
-			// else: player completed all levels, display victory message
 	}
 
 	case tea.WindowSizeMsg:
@@ -207,6 +217,12 @@ func (m model) View() string {
 	// Add help text
 	help := helpStyle.Render("Arrow keys or hjkl to move • q/esc to quit")
 
+	if m.hasKey {
+		help += helpStyle.Render("- 🔑")
+	} else {
+		help += helpStyle.Render("")
+	}
+
 	return sb.String() + help + "\n\n" + instruction
 }
 
@@ -215,7 +231,7 @@ func (m model) isWalkable(x, y int) bool {
 		return false
 	}
 
-	if m.level[y][x] == '%' || m.level[y][x] == '@' || m.level[y][x] == 's' || m.level[y][x] == '-' {
+	if m.level[y][x]== '△' || m.level[y][x] == '%' || m.level[y][x] == '@' || m.level[y][x] == 's' || m.level[y][x] == '-' {
 		return true
 	}
 
