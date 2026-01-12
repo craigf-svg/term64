@@ -71,7 +71,7 @@ func GenerateLevel(width, height int) [][]rune {
 	x, y := startX, startY
 	for !(x == endX && y == endY) {  // Loop until we reach the goal
 		// Purely leave walkable - for debugging
-		if level[y][x] != '△' && level[y][x] != '@' {
+		if level[y][x] != '⚷' && level[y][x] != '@' {
 			level[y][x] = '.'  // Place floor tile
 		}
 		
@@ -102,7 +102,7 @@ func GenerateLevel(width, height int) [][]rune {
 
 	keyY, keyX := placeKey(level)
 
-	level[keyY][keyX] = '△'
+	level[keyY][keyX] = '⚷'
 	return level
 }
 

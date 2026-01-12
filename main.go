@@ -107,7 +107,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-	if m.level[m.playerY][m.playerX] == '△' {
+	if m.level[m.playerY][m.playerX] == '⚷' {
 		m.hasKey = true;
 	}
 
@@ -196,8 +196,12 @@ func (m model) View() string {
 				sb.WriteString(wallStyle.Render(string(cell)))
 			} else if cell == '%' {
 				sb.WriteString(stairsStyle.Render(string(cell)))
-			} else if cell == '-' {
-				sb.WriteString(floorStyle.Render("-"))
+			} else if cell == '⚷' {
+				if m.hasKey {
+					sb.WriteString(floorStyle.Render("."))
+				} else {
+					sb.WriteString(floorStyle.Render("⚷"))
+				}
 			} else if cell == '@' {
 				// Start of level marker
 				sb.WriteString(floorStyle.Render("s"))
@@ -218,7 +222,7 @@ func (m model) View() string {
 	help := helpStyle.Render("Arrow keys or hjkl to move • q/esc to quit")
 
 	if m.hasKey {
-		help += helpStyle.Render("- 🔑")
+		help += helpStyle.Render("Inventory - ⚷")
 	} else {
 		help += helpStyle.Render("")
 	}
@@ -231,7 +235,7 @@ func (m model) isWalkable(x, y int) bool {
 		return false
 	}
 
-	if m.level[y][x]== '△' || m.level[y][x] == '%' || m.level[y][x] == '@' || m.level[y][x] == 's' || m.level[y][x] == '-' {
+	if m.level[y][x]== '⚷' || m.level[y][x] == '%' || m.level[y][x] == '@' || m.level[y][x] == 's' || m.level[y][x] == '-' {
 		return true
 	}
 
