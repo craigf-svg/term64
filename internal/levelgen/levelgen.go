@@ -4,10 +4,10 @@ import (
 	"math/rand"
 )
 
-func GetMostCrowdedLevel(width, height, amount int) [][]rune {
+func GetMostCrowdedLevel(width, height, amount int, generateKey bool) [][]rune {
 	levelsSlice := make([][][]rune, amount)
 	for i :=0; i< amount; i++ {
-		levelsSlice[i] = GenerateLevel(width, height)
+		levelsSlice[i] = GenerateLevel(width, height, generateKey)
 	}
 
 	maxWalls := 0
@@ -35,7 +35,7 @@ func CountWalls(level [][]rune) int {
 	return count
 }
 
-func GenerateLevel(width, height int) [][]rune {
+func GenerateLevel(width, height int, generateKey bool) [][]rune {
 	// Initialize with all walls
 	level := make([][]rune, height)
 	for y := 0; y < height; y++ {
@@ -99,10 +99,11 @@ func GenerateLevel(width, height int) [][]rune {
 			}
 		}
 	}
-
-	keyY, keyX := placeKey(level)
-
-	level[keyY][keyX] = '⚷'
+	
+	if(generateKey) {
+		keyY, keyX := placeKey(level)
+		level[keyY][keyX] = '⚷'
+	}
 	return level
 }
 

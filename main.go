@@ -4,47 +4,49 @@ import (
 	"fmt"
 	"strings"
 
-	"term64/internal/levelgen"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
+	"term64/internal/levelgen"
 )
 
 type model struct {
-	levels     [][][]rune
-	levelIndex int
-	level      [][]rune
-	playerX    int
-	playerY    int
-	catTargetX int
-	catTargetY int
-	catEarned  bool
-	catX       int
-	catY       int
-	width      int
-	height     int
-	win        bool
-	hasKey     bool
+	levels      [][][]rune
+	levelIndex  int
+	level       [][]rune
+	playerX     int
+	playerY     int
+	catTargetX  int
+	catTargetY  int
+	catEarned   bool
+	catX        int
+	catY        int
+	width       int
+	height      int
+	win         bool
+	hasKey      bool
+	levelHasKey []bool
 }
 
 func initialModel() model {
-	level0 := levelgen.GetMostCrowdedLevel(19, 11, 1)
-	level1 := levelgen.GetMostCrowdedLevel(19, 11, 2)
-	level2 := levelgen.GetMostCrowdedLevel(19, 11, 3)
-	level3 := levelgen.GetMostCrowdedLevel(19, 11, 50)
+	level0 := levelgen.GetMostCrowdedLevel(19, 11, 1, false)
+	level1 := levelgen.GetMostCrowdedLevel(19, 11, 2, false)
+	level2 := levelgen.GetMostCrowdedLevel(19, 11, 3, true)
+	level3 := levelgen.GetMostCrowdedLevel(19, 11, 50, true)
 
 	allLevels := [][][]rune{level0, level1, level2, level3}
 	playerY, playerX := findPlayerStart(allLevels[0])
 
 	return model{
-		levels:     allLevels,
-		levelIndex: 0,
-		level:      allLevels[0],
-		playerX:    playerX,
-		playerY:    playerY,
-		catX:       1,
-		catY:       1,
-		catEarned:  false,
-		hasKey:     false,
+		levels:      allLevels,
+		levelIndex:  0,
+		level:       allLevels[0],
+		playerX:     playerX,
+		playerY:     playerY,
+		catX:        1,
+		catY:        1,
+		catEarned:   false,
+		hasKey:      false,
+		levelHasKey: []bool{false, false, true, true},
 	}
 }
 
@@ -57,7 +59,7 @@ func findPlayerStart(runeMap [][]rune) (row, col int) {
 					}
 			}
 	}*/
-	return 2, 2 
+	return 2, 2
 }
 
 func (m model) Init() tea.Cmd {
@@ -107,23 +109,23 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
-	if m.level[m.playerY][m.playerX] == '⚷' {
-		m.hasKey = true;
-	}
+		if m.level[m.playerY][m.playerX] == '⚷' {
+			m.hasKey = true
+		}
 
-	if m.shouldChangeLevel(m.playerX, m.playerY) {
-			if m.hasKey {
+		if m.shouldChangeLevel(m.playerX, m.playerY) {
+			if m.hasKey || (m.levelHasKey[m.levelIndex] == false) {
 				m.levelIndex++
 				if m.levelIndex < len(m.levels) {
-						m.level = m.levels[m.levelIndex]
-						m.playerY, m.playerX = findPlayerStart(m.level)
-						m.catTargetX, m.catTargetY = m.playerX, m.playerY
-						m.catX, m.catY = m.playerX, m.playerY
-						m.hasKey = false
+					m.level = m.levels[m.levelIndex]
+					m.playerY, m.playerX = findPlayerStart(m.level)
+					m.catTargetX, m.catTargetY = m.playerX, m.playerY
+					m.catX, m.catY = m.playerX, m.playerY
+					m.hasKey = false
 				}
 				// else: player completed all levels, display victory message
 			}
-	}
+		}
 
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
@@ -148,17 +150,17 @@ func (m model) View() string {
 			Align(lipgloss.Center)
 		endMessage := ""
 		if !m.catEarned {
-				endMessage += "\nYou notice a face peering from the darkness\n\n" + catFaceStyle.Render("^._.^") 
-				endMessage += "\n\nA mysterious cat was watching your journey.\n"
-				endMessage += "Show them the way out?\n\n"	
-				endMessage += "Press 'r' to retrive cat"
+			endMessage += "\nYou notice a face peering from the darkness\n\n" + catFaceStyle.Render("^._.^")
+			endMessage += "\n\nA mysterious cat was watching your journey.\n"
+			endMessage += "Show them the way out?\n\n"
+			endMessage += "Press 'r' to retrive cat"
 		} else {
-				endMessage += "\n🎉 VICTORY! 🎉\n\nYou saved the cat! "
-				endMessage += "\n\n\n" + catFaceStyle.Render("ฅ^•ﻌ•^ฅ") + "\n\n You and your faithful companion made it!\n\n"
-				endMessage += "Press 'q' to quit | Press 'r' to restart"
+			endMessage += "\n🎉 VICTORY! 🎉\n\nYou saved the cat! "
+			endMessage += "\n\n\n" + catFaceStyle.Render("ฅ^•ﻌ•^ฅ") + "\n\n You and your faithful companion made it!\n\n"
+			endMessage += "Press 'q' to quit | Press 'r' to restart"
 		}
 		return victoryStyle.Render(endMessage)
-}
+	}
 
 	// Define styles
 	wallStyle := lipgloss.NewStyle().
@@ -235,7 +237,7 @@ func (m model) isWalkable(x, y int) bool {
 		return false
 	}
 
-	if m.level[y][x]== '⚷' || m.level[y][x] == '%' || m.level[y][x] == '@' || m.level[y][x] == 's' || m.level[y][x] == '-' {
+	if m.level[y][x] == '⚷' || m.level[y][x] == '%' || m.level[y][x] == '@' || m.level[y][x] == 's' || m.level[y][x] == '-' {
 		return true
 	}
 
