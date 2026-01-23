@@ -69,29 +69,35 @@ func (m model) Init() tea.Cmd {
 func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
 	case tea.KeyMsg:
-		m.catX, m.catY = m.catTargetX, m.catTargetY
-		m.catTargetX, m.catTargetY = m.playerX, m.playerY
 		switch msg.String() {
 		case "ctrl+c", "q", "esc":
 			return m, tea.Quit
 
 		case "up", "k":
-			if m.isWalkable(m.playerX, m.playerY-1) {
+			if m.levelIndex < len(m.levels) && m.isWalkable(m.playerX, m.playerY-1) {
+				m.catX, m.catY = m.catTargetX, m.catTargetY
+				m.catTargetX, m.catTargetY = m.playerX, m.playerY
 				m.playerY--
 			}
 
 		case "down", "j":
-			if m.isWalkable(m.playerX, m.playerY+1) {
+			if m.levelIndex < len(m.levels) && m.isWalkable(m.playerX, m.playerY+1) {
+				m.catX, m.catY = m.catTargetX, m.catTargetY
+				m.catTargetX, m.catTargetY = m.playerX, m.playerY
 				m.playerY++
 			}
 
 		case "left", "h":
-			if m.isWalkable(m.playerX-1, m.playerY) {
+			if m.levelIndex < len(m.levels) && m.isWalkable(m.playerX-1, m.playerY) {
+				m.catX, m.catY = m.catTargetX, m.catTargetY
+				m.catTargetX, m.catTargetY = m.playerX, m.playerY
 				m.playerX--
 			}
 
 		case "right", "l":
-			if m.isWalkable(m.playerX+1, m.playerY) {
+			if m.levelIndex < len(m.levels) && m.isWalkable(m.playerX+1, m.playerY) {
+				m.catX, m.catY = m.catTargetX, m.catTargetY
+				m.catTargetX, m.catTargetY = m.playerX, m.playerY
 				m.playerX++
 			}
 		case "r":
@@ -109,6 +115,8 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			}
 		}
 
+	// Only process game logic if we're in an active level
+	if m.levelIndex < len(m.levels) {
 		if m.level[m.playerY][m.playerX] == '⚷' {
 			m.hasKey = true
 		}
@@ -126,6 +134,7 @@ func (m model) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 				// else: player completed all levels, display victory message
 			}
 		}
+	}
 
 	case tea.WindowSizeMsg:
 		m.width = msg.Width
